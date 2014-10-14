@@ -4,17 +4,21 @@ Created on Sat Oct 11 21:52:32 2014
 
 @author: Richard Rymer
 
-Retrieves the full genome from Entrez nucleotide
+Retrieves the full genome for an organism from Entrez nucleotide
 """
 
 from urllib2 import HTTPError
 from Bio import SeqIO, Entrez
+import warnings
 
 class InputError(Exception):
     pass
 
-class NoMatchingSequence(Warning):
+class NoMatchingSequenceWarning(Warning):
     pass
+
+def warn_no_sequence_found(ORG_NAME):
+    warnings.warn('No sequence was found for organism: ' + ORG_NAME, NoMatchingSequenceWarning)
 
 def find_genome_gi(ORG_NAME,restr=''):
     """
@@ -36,16 +40,16 @@ def get_genome_seq(ORG_NAME):
     if not id:
         id = find_genome_gi(ORG_NAME)
     if not id:
-        raise NoMatchingSequence, 'No sequence was found for organism: ' + ORG_NAME
+        warn_no_sequence_found(ORG_NAME)
         return
     try:
         seq_record = SeqIO.read(Entrez.efetch(db="nucleotide", id=id,rettype="fasta", retmode="text"),\
                                 'fasta')                        
         if len(seq_record.seq._data) < 1:
-            raise NoMatchingSequence, 'No sequence was found for organism: ' + ORG_NAME
+            warn_no_sequence_found(ORG_NAME)
             return
     except HTTPError:
-        raise NoMatchingSequence, 'No sequence was found for organism: ' + ORG_NAME
+        warn_no_sequence_found(ORG_NAME)
         return
     
     return seq_record

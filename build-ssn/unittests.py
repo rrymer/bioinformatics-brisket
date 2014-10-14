@@ -24,7 +24,6 @@ class RetrieverTests(unittest.TestCase):
         'seqannot', 'snp', 'sra', 'taxonomy', 'toolkit', 'toolkitall',
         'toolkitbook', 'unigene', 'gencoll', 'gtr']
         nr.Entrez.email = 'richard.rymer@rrcc.edu'
-        self.handle = nr.get_taxid_entry_from_entrez('316385')
         self.test_name = 'Escherichia coli str. K-12 substr. DH10B'
     
     def test_00_name_retriever_get_taxon_name(self):
@@ -32,7 +31,7 @@ class RetrieverTests(unittest.TestCase):
         Verifies that the Entrez taxonomy database can be communicated with,
         and a search of taxid 316385 return E. coli
         """
-        self.assertEqual(nr.get_taxon_name(nr.parse_xml(self.handle)),self.test_name)
+        self.assertEqual(nr.get_taxon_name('316385'),self.test_name)
     
     def test_01_get_genome_gets_correct_gi(self):
         self.assertEqual(get_genome.find_genome_gi(self.test_name,restr='refseq'),'170079663')
@@ -45,5 +44,15 @@ class RetrieverTests(unittest.TestCase):
     
     def test_04_get_genome_returns_full_genome(self):
         self.assertEqual(len(get_genome.get_genome_seq(self.test_name).seq._data),4686137)
+    
+    def test_05_get_genome_raises_warning_if_no_genome(self):
+        """
+        this fails, but I think the warning works.
+        
+        output of running at cli with 'abcde'
+        get_genome.py:21: NoMatchingSequenceWarning: No sequence was found for organism: abcd
+        warnings.warn('No sequence was found for organism: ' + ORG_NAME, NoMatchingSequenceWarning)
+        """
+        self.assertWarns(get_genome.NoMatchingSequenceWarning,get_genome.get_genome_seq('abcd'))
         
         
